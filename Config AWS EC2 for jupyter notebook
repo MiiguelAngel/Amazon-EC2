@@ -1,7 +1,7 @@
 # Change the permissions of the pem file
-chmod 400 "file-name.pem"
+chmod 400 "Universidad_Central.pem"
 
-ssh -i {file-name.pem} ubuntu@{ipv4-dns}
+ssh -i Universidad_Central.pem ubuntu@ec2-18-234-101-232.compute-1.amazonaws.com
 
 # Install all the necessary Data science modules including flask
 sudo apt update
@@ -10,8 +10,8 @@ sudo apt install pipx
 sudo apt install jupyter-core
 
 export PATH=$PATH:~/.local/bin
-ubuntu@ip-172-31-64-146:~$ source ~/.bashrc
-ubuntu@ip-172-31-64-146:~$ pipx install jupyter
+source ~/.bashrc
+pipx install jupyter
 pipx install notebook
 pipx install jupyterlab
 pipx install jupyter notebook
