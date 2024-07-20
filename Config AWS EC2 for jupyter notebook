@@ -1,7 +1,7 @@
 # Change the permissions of the pem file
 chmod 400 "Universidad_Central.pem"
 
-ssh -i Universidad_Central.pem ubuntu@ec2-18-234-101-232.compute-1.amazonaws.com
+ssh -i Universidad_Central.pem ubuntu@ec2-3-238-140-247.compute-1.amazonaws.com
 
 # Install all the necessary Data science modules including flask
 sudo apt update
@@ -33,6 +33,7 @@ lsblk ##Lista todos los dispositivos
 ##Montar el disco
 sudo mkdir /mnt/mydisk
 sudo mount /dev/nvme1n1 /mnt/mydisk
+sudo chown ubuntu:ubuntu /mnt/mydisk
 df -h /mnt/mydisk
 sudo chmod 644 /dev/nvme1n1
 
