@@ -1,0 +1,179 @@
+pip install gdown
+pip install pandas
+pip install imblearn
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import gdown
+import pandas as pd
+import os
+
+# ID del archivo de Google Drive
+file_id = '1z7UUXiWAvR2D4XvdcfXzkhafU2km4HM-'
+# URL de descarga directa
+url = f'https://drive.google.com/uc?export=download&id={file_id}'
+
+# Ruta de destino en el nuevo disco montado
+output_path = '/mnt/mydisk/BBDD_FRAUDE_PREPROCESADA_VARIABLES_DEF.csv'
+
+# Descargar el archivo
+gdown.download(url, output_path, quiet=False)
+
+# Verificar que el archivo se ha descargado correctamente
+if os.path.exists(output_path):
+    print("El archivo se ha descargado correctamente en", output_path)
+    
+    # Leer el archivo CSV en un DataFrame de pandas
+    bbdd = pd.read_csv(output_path)
+    
+    # Verificar que el DataFrame se ha cargado correctamente
+    print("El archivo CSV se ha leído correctamente en un DataFrame de pandas.")
+    display(bbdd.head())  # Mostrar las primeras filas del DataFrame para verificar
+else:
+    print("Error en la descarga del archivo")
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import numpy as np
+bbdd['log_F_AMOUNT_TRANSACTION'] = np.log1p(bbdd['F_AMOUNT_TRANSACTION'])
+bbdd['log_F_AMOUNT_TRANSACTION'] = bbdd['log_F_AMOUNT_TRANSACTION'].astype('float64')
+
+bbdd['log_MONTO_PROM_ULT_MES'] = np.log1p(bbdd['MONTO_PROM_ULT_MES'])
+bbdd['log_MONTO_PROM_ULT_MES'] = bbdd['log_MONTO_PROM_ULT_MES'].astype('float64')
+
+bbdd['log_MONTO_PROM_ULT_MES_ENTRY'] = np.log1p(bbdd['MONTO_PROM_ULT_MES_ENTRY'])
+bbdd['log_MONTO_PROM_ULT_MES_ENTRY'] = bbdd['log_MONTO_PROM_ULT_MES_ENTRY'].astype('float64')
+
+bbdd['log_MONTO_PROM_ULT_MES_MERCHANT'] = np.log1p(bbdd['MONTO_PROM_ULT_MES_MERCHANT'])
+bbdd['log_MONTO_PROM_ULT_MES_MERCHANT'] = bbdd['log_MONTO_PROM_ULT_MES_MERCHANT'].astype('float64')
+
+bbdd['log_last_transaction_amount'] = np.log1p(bbdd['last_transaction_amount'])
+bbdd['log_last_transaction_amount'] = bbdd['log_last_transaction_amount'].astype('float64')
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Columnas a eliminar
+columns_to_remove = ['PERIODO', 'ID_TRX','N_ID_CUSTOMER','S_CARD_ACCEPT_EXT_ID_CODE',
+                     'F_AMOUNT_TRANSACTION','D_TRANSMISSION_DATE_AND_TIME',
+                     'S_RESPONSE_CODE','NUMERO_DOCUMENTO_CODIFICADO',
+                     'S_PAN','S_PAN_CODIFICADO','MONTO_PROM_ULT_MES','MONTO_PROM_ULT_MES_ENTRY'
+                      'MONTO_PROM_ULT_MES_MERCHANT','last_transaction_amount']
+
+# Método 1: List Comprehension
+filtered_columns = [col for col in bbdd.columns if col not in columns_to_remove]
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+bbdd['time_since_last_transaction'] = bbdd['time_since_last_transaction'].fillna(0)
+bbdd['log_last_transaction_amount'] = bbdd['log_last_transaction_amount'].fillna(0)
+bbdd['CANT_CLI_DISPOSITIVO'] = bbdd['CANT_CLI_DISPOSITIVO'].fillna(0)
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+for col in filtered_columns:
+    if 'int' in str(bbdd[col].dtype):
+        bbdd[col] = bbdd[col].astype('int64')
+    elif 'float' in str(bbdd[col].dtype):
+        bbdd[col] = bbdd[col].astype('float64')
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import pandas as pd
+import numpy as np
+
+# Suponiendo que tienes tu dataset cargado en un DataFrame llamado df
+# Asegúrate de preparar tus datos adecuadamente según las características específicas de tu dataset
+
+# Usar dask para manejar grandes volúmenes de datos
+# import dask.dataframe as dd
+
+# Convertir pandas DataFrame a dask DataFrame
+# ddf = dd.from_pandas(bbdd[filtered_columns], npartitions=1)  # Aumentar npartitions si es necesario
+
+# Separar características (X) y etiquetas (y)
+X = bbdd[filtered_columns].drop('fraude', axis=1)
+y = bbdd[filtered_columns]['fraude']
+
+# Convertir dask DataFrame a pandas DataFrame por particiones para el muestreo
+# X = X.compute()
+# y = y.compute()
+
+# Aplicar NearMiss en partes para manejar la memoria
+chunk_size = 1000000  # Ajusta este tamaño según la memoria disponible
+num_chunks = int(np.ceil(len(X) / chunk_size))
+num_chunks
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import gc
+del bbdd
+gc.collect()
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import pandas as pd
+import numpy as np
+import torch
+from imblearn.combine import SMOTEENN
+from sklearn.model_selection import train_test_split
+
+# Configura para usar GPU si está disponible
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Asumiendo que tienes las siguientes variables ya definidas
+# num_chunks: el número de chunks en los que se dividirá el dataset
+# chunk_size: el tamaño de cada chunk
+# X: el dataframe de características
+# y: la serie de etiquetas
+
+# Asegúrate de que las columnas se convierten correctamente a tipos adecuados
+X['N_TRANSACTION_COUNTRY_CODE'] = X['N_TRANSACTION_COUNTRY_CODE'].astype('int64')
+X['S_ECOM_SECURITY_LVL_AND_UCAF'] = X['S_ECOM_SECURITY_LVL_AND_UCAF'].astype('int64')
+
+X_resampled_list = []
+y_resampled_list = []
+
+smote_enn = SMOTEENN(random_state=42)
+
+chunk_counter = 0
+
+for i in range(num_chunks):
+    start_idx = i * chunk_size
+    end_idx = min((i + 1) * chunk_size, len(X))
+    X_chunk = X.iloc[start_idx:end_idx].copy()
+    y_chunk = y.iloc[start_idx:end_idx].copy()
+
+    initial_count = len(y_chunk)
+    initial_distribution = y_chunk.value_counts()
+
+    # Convertir y_chunk a tipo entero si es necesario
+    if not pd.api.types.is_integer_dtype(y_chunk):
+        y_chunk = y_chunk.astype(int)
+
+    X_chunk = X_chunk.astype(np.float64)
+
+    # Aplica smoteen a la parte del conjunto de datos
+    X_res_chunk, y_res_chunk = smote_enn.fit_resample(X_chunk, y_chunk)
+
+    final_count = len(y_res_chunk)
+    final_distribution = pd.Series(y_res_chunk).value_counts()
+
+    # Imprimir información sobre el chunk procesado
+    print('*'*100)
+    print(f"Chunk {i + 1}/{num_chunks}")
+    print(f"Initial count: {initial_count}")
+    print(f"Initial distribution:\n{initial_distribution}")
+    print(f"Final count: {final_count}")
+    print(f"Final distribution:\n{final_distribution}")
+    print('*'*100)
+
+    # Convertir a tensores de PyTorch y transferir a la GPU
+    X_res_chunk_tensor = torch.tensor(X_res_chunk.values, dtype=torch.float32).to(device)
+    y_res_chunk_tensor = torch.tensor(y_res_chunk, dtype=torch.long).to(device)
+
+    X_resampled_list.append(X_res_chunk_tensor)
+    y_resampled_list.append(y_res_chunk_tensor)
+
+    chunk_counter += 1
+
+# Concatenar todas las partes resampleadas
+X_resampled = torch.cat(X_resampled_list, dim=0)
+y_resampled = torch.cat(y_resampled_list, dim=0)
+
+# Verificar la distribución de clases después del balanceo
+print(torch.bincount(y_resampled).cpu())
+
+# Imprimir el número total de chunks procesados
+print(f"Total chunks processed: {chunk_counter}")
+
+# Convertir de nuevo a DataFrame de pandas si es necesario
+X_resampled_df = pd.DataFrame(X_resampled.cpu().numpy())
+y_resampled_df = pd.Series(y_resampled.cpu().numpy())
