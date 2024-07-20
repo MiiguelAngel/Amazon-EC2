@@ -1,18 +1,28 @@
-pip install gdown
-
 import gdown
 import pandas as pd
+import os
 
 # ID del archivo de Google Drive
 file_id = '1z7UUXiWAvR2D4XvdcfXzkhafU2km4HM-'
 # URL de descarga directa
 url = f'https://drive.google.com/uc?export=download&id={file_id}'
 
+# Ruta de destino en el nuevo disco montado
+output_path = '/mnt/mydisk/BBDD_FRAUDE_PREPROCESADA_VARIABLES_DEF.csv'
+
 # Descargar el archivo
-gdown.download(url, 'BBDD_FRAUDE_PREPROCESADA_VARIABLES_DEF.csv', quiet=False)
+# gdown.download(url, output_path, quiet=False)
 
-# Leer el archivo CSV en un DataFrame
-df = pd.read_csv('BBDD_FRAUDE_PREPROCESADA_VARIABLES_DEF.csv')
+# Verificar que el archivo se ha descargado correctamente
+if os.path.exists(output_path):
+    print("El archivo se ha descargado correctamente en", output_path)
+    
+    # Leer el archivo CSV en un DataFrame de pandas
+    bbdd = pd.read_csv(output_path)
+    
+    # Verificar que el DataFrame se ha cargado correctamente
+    print("El archivo CSV se ha leído correctamente en un DataFrame de pandas.")
+    print(bbdd.head())  # Mostrar las primeras filas del DataFrame para verificar
+else:
+    print("Error en la descarga del archivo")
 
-# Mostrar las primeras filas del DataFrame
-display(df.head())
