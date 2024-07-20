@@ -26,10 +26,6 @@ jupyter notebook password
 jupyter-lab --ip 0.0.0.0 --no-browser --allow-root
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-##Montar disco duro sobre la instancia para lectura
-df -h ##Revisa las unidades disponibles
-lsblk ##Lista todos los dispositivos
-
 ##Montar el disco
 sudo mkdir /mnt/mydisk
 sudo mount /dev/nvme1n1 /mnt/mydisk
@@ -86,6 +82,15 @@ python -c "import torch; print(torch.cuda.is_available())"
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Probar la instalación y uso de CUDA en python
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f'Using device: {device}')
-sudo chown ubuntu:ubuntu /mnt/mydisk
+import cuml
+import cudf
+import cupy as cp
+
+print("cuML version:", cuml.__version__)
+print("cuDF version:", cudf.__version__)
+print("CUDA Version:", cp.cuda.runtime.getVersion())
+##Montar disco duro sobre la instancia para lectura
+df -h ##Revisa las unidades disponibles
+lsblk ##Lista todos los dispositivos
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
