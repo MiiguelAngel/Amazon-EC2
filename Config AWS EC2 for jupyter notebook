@@ -35,3 +35,6 @@ sudo mkdir /mnt/mydisk
 sudo mount /dev/nvme1n1 /mnt/mydisk
 df -h /mnt/mydisk
 sudo chmod 644 /dev/nvme1n1
+
+#Cambiar propietarioa ubuntu del disco duro para poder escribir sobre el disco
+sudo chown ubuntu:ubuntu /mnt/mydisk
