@@ -25,6 +25,16 @@ jupyter notebook password
 jupyter-lab --ip 0.0.0.0 --no-browser --allow-root
 
 
+# Instalaciones necesarias para usar CUDA y GPU
+sudo apt-get update
+sudo apt-get install -y nvidia-driver-460
+sudo reboot
+
+nvidia-smi #Verificar la instalacion
+pip install tensorflow-gpu 
+pip install torch torchvision torchaudio
+
+
 ##Montar disco duro sobre la instancia para lectura
 df -h ##Revisa las unidades disponibles
 lsblk ##Lista todos los dispositivos
