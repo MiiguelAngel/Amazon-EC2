@@ -1,8 +1,9 @@
 # Change the permissions of the pem file
 chmod 400 "Universidad_Central.pem"
+ssh -i Universidad_Central.pem ubuntu@ec2-44-201-3-184.compute-1.amazonaws.com
 
-ssh -i Universidad_Central.pem ubuntu@ec2-3-216-95-106.compute-1.amazonaws.com
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Install all the necessary Data science modules including flask
 sudo apt update
 sudo apt install python3-pip
@@ -11,10 +12,10 @@ sudo apt install jupyter-core
 
 export PATH=$PATH:~/.local/bin
 source ~/.bashrc
-pipx install jupyter
-pipx install notebook
-pipx install jupyterlab
-pipx install jupyter notebook
+pip install jupyter
+pip install notebook
+pip install jupyterlab
+pip install jupyter notebook
 echo 'export PATH=$PATH:~/.local/bin' >> ~/.bashrc
 source ~/.bashrc
 
@@ -23,22 +24,11 @@ jupyter notebook password
 
 # Initiate jupyterlab 
 jupyter-lab --ip 0.0.0.0 --no-browser --allow-root
-
-
-# Instalaciones necesarias para usar CUDA y GPU
-sudo apt-get update
-sudo apt-get install -y nvidia-driver-460
-sudo reboot
-
-nvidia-smi #Verificar la instalacion
-pip install tensorflow-gpu 
-pip install torch torchvision torchaudio
-
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ##Montar disco duro sobre la instancia para lectura
 df -h ##Revisa las unidades disponibles
 lsblk ##Lista todos los dispositivos
-
 
 ##Montar el disco
 sudo mkdir /mnt/mydisk
@@ -48,4 +38,54 @@ df -h /mnt/mydisk
 sudo chmod 644 /dev/nvme1n1
 
 #Cambiar propietarioa ubuntu del disco duro para poder escribir sobre el disco
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+sudo apt-get update
+sudo apt-get install -y nvidia-driver-460
+sudo apt-get install -y nvidia-cuda-toolkit
+nvidia-smi
+
+pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu111
+
+# Agregar el repositorio de controladores de NVIDIA
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt-get update
+
+# Instalar la versión más reciente del controlador de NVIDIA
+sudo apt-get install -y nvidia-driver-510  # O la última versión disponible
+
+# Reiniciar la instancia para aplicar los cambios
+sudo reboot
+
+#Verificar y reparar archivos rotos
+sudo apt-get update
+sudo apt-get -f install
+
+#instalacion de paquetes individuales
+sudo apt-get install -y libnvidia-gl-535 libnvidia-extra-535 nvidia-compute-utils-535 libnvidia-encode-535 nvidia-utils-535 libnvidia-fbc1-535
+
+#instaklar controladores desde NVIDIA
+sudo apt-get remove --purge '^nvidia-.*'
+sudo apt-get autoremove
+sudo apt-get clean
+
+# Añadir el repositorio de NVIDIA
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt-get update
+
+#Instalar el driver
+sudo apt-get install -y nvidia-driver-535
+
+#Verificar el dirver instalado
+nvidia-smi
+
+# Disponibilidad de la GPU con python
+python -c "import torch; print(torch.cuda.is_available())"
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Probar la instalación y uso de CUDA en python
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f'Using device: {device}')
 sudo chown ubuntu:ubuntu /mnt/mydisk
