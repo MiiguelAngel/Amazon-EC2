@@ -95,14 +95,18 @@ lsblk ##Lista todos los dispositivos
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Instalación en una AMI con Pytorch
-sudo apt-get update
-sudo apt-get upgrade -y
+# Descargar el instalador de Miniconda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 
-sudo add-apt-repository ppa:graphics-drivers/ppa
-sudo apt-get update
+# Ejecutar el instalador
+bash Miniconda3-latest-Linux-x86_64.sh
 
-sudo apt-get install -y nvidia-driver-535
+# Seguir las instrucciones del instalador
 
-sudo reboot
+source ~/.bashrc
 
-nvidia-smi
+# Crear el entorno con las especificaciones dadas
+conda create -n rapids-imblearn -c rapidsai -c conda-forge -c nvidia rapids=23.02 python=3.8 cudatoolkit=11.5 imbalanced-learn
+
+# Activar el entorno creado
+conda activate rapids-imblearn
