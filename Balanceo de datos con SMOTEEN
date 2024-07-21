@@ -104,15 +104,17 @@ import numpy as np
 import pandas as pd
 from imblearn.over_sampling import RandomOverSampler
 from sklearn.datasets import make_classification
+import os
+import gc
 
 # Crear el muestreador de oversampling
 sampler = RandomOverSampler()
 
-# Lista para almacenar los resultados de oversampling
-X_resampled_all = []
-y_resampled_all = []
+# Crear la carpeta para guardar los archivos si no existe
+output_dir = '/opt/dlami/nvme/BBDD_resampled'
+os.makedirs(output_dir, exist_ok=True)
 
-# Procesar cada chunk
+# Procesar cada chunk y guardar los resultados en archivos
 for i in range(num_chunks):
     start_index = i * chunk_size
     end_index = min((i + 1) * chunk_size, len(X))
@@ -143,14 +145,16 @@ for i in range(num_chunks):
     print(f"Final distribution:\n{final_distribution}")
     print('*'*100)
     
-    # Convertir los resultados a cudf DataFrame/Series
-    X_resampled_cudf = cudf.DataFrame.from_records(X_resampled_np, columns=X_chunk.columns)
-    y_resampled_cudf = cudf.Series(y_resampled_np)
+    # Convertir los resultados a pandas DataFrame/Series
+    X_resampled_pd = pd.DataFrame(X_resampled_np, columns=X_chunk.columns)
+    y_resampled_pd = pd.Series(y_resampled_np)
     
-    # Convertir de vuelta a pandas DataFrame/Series y almacenar en listas
-    X_resampled_all.append(X_resampled_cudf.to_pandas())
-    y_resampled_all.append(y_resampled_cudf.to_pandas())
+    # Guardar en archivos CSV
+    X_resampled_pd.to_csv(f'{output_dir}/X_resampled_chunk_{i}.csv', index=False)
+    y_resampled_pd.to_csv(f'{output_dir}/y_resampled_chunk_{i}.csv', index=False)
 
-# Combinar los resultados de oversampling
-X_resampled_all = pd.concat(X_resampled_all, ignore_index=True)
-y_resampled_all = pd.concat(y_resampled_all, ignore_index=True)
+    # Limpiar memoria
+    del X_chunk, y_chunk, X_np, y_np, X_resampled_np, y_resampled_np, X_resampled_pd, y_resampled_pd
+    gc.collect()
+
+print("Todos los chunks han sido procesados y guardados.")
