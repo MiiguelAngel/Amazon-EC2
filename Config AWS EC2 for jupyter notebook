@@ -1,6 +1,6 @@
 # Change the permissions of the pem file
 chmod 400 "Universidad_Central.pem"
-ssh -i Universidad_Central.pem ubuntu@ec2-54-147-126-18.compute-1.amazonaws.com
+ssh -i Universidad_Central.pem ubuntu@ec2-52-54-75-177.compute-1.amazonaws.com
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -37,9 +37,9 @@ sudo chmod 644 /dev/nvme1n1
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 sudo apt-get update
-sudo apt-get install -y nvidia-driver-460
+sudo apt-get install -y nvidia-driver-535
 sudo apt-get install -y nvidia-cuda-toolkit
-nvidia-smi
+  nvidia-smi
 
 pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu111
 
@@ -94,3 +94,15 @@ df -h ##Revisa las unidades disponibles
 lsblk ##Lista todos los dispositivos
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Instalación en una AMI con Pytorch
+sudo apt-get update
+sudo apt-get upgrade -y
+
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt-get update
+
+sudo apt-get install -y nvidia-driver-535
+
+sudo reboot
+
+nvidia-smi
