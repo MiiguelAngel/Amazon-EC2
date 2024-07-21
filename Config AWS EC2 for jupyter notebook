@@ -1,6 +1,6 @@
 # Change the permissions of the pem file
 chmod 400 "Universidad_Central.pem"
-ssh -i Universidad_Central.pem ubuntu@ec2-52-54-75-177.compute-1.amazonaws.com
+ssh -i Universidad_Central.pem ubuntu@ec2-34-201-8-170.compute-1.amazonaws.com
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
