@@ -1,6 +1,6 @@
 # Change the permissions of the pem file
 chmod 400 "Universidad_Central.pem"
-ssh -i Universidad_Central.pem ubuntu@ec2-34-201-8-170.compute-1.amazonaws.com
+ssh -i Universidad_Central.pem ubuntu@ec2-3-236-36-74.compute-1.amazonaws.com
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -105,8 +105,14 @@ bash Miniconda3-latest-Linux-x86_64.sh
 
 source ~/.bashrc
 
+conda create --name gpu_env python=3.10
+conda activate gpu_env
+
 # Crear el entorno con las especificaciones dadas
 conda create -n rapids-imblearn -c rapidsai -c conda-forge -c nvidia rapids=23.02 python=3.8 cudatoolkit=11.5 imbalanced-learn
 
 # Activar el entorno creado
 conda activate rapids-imblearn
+
+python -c "import cudf; import cuml; import pandas as pd; import imblearn; import sklearn; print('All packages imported successfully')"
+
