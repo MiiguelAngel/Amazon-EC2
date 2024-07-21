@@ -1,0 +1,39 @@
+!pip install boto3
+
+import boto3
+from botocore.exceptions import NoCredentialsError
+
+# Configura tus credenciales de AWS y la región
+aws_access_key_id = ''
+aws_secret_access_key = ''
+region_name = 'us-east-1'  # Cambia esto a tu región de AWS
+
+# Crea una sesión de boto3
+session = boto3.Session(
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name=region_name
+)
+
+# Crea un cliente de S3
+s3 = session.client('s3')
+
+# Define el nombre del bucket y el archivo que quieres subir
+bucket_name = ''
+file_name = ''  # Ruta al archivo en tu sistema de archivos de Colab
+s3_file_name = ''  # Nombre que tendrá el archivo en S3
+
+#Subir el archivo
+try:
+    s3.download_file(bucket_name, s3_file_name, file_name  )
+    display(f"Archivo '{s3_file_name}' descargado de S3 como '{file_name}'.")
+except FileNotFoundError:
+    print("El archivo no fue encontrado.")
+except NoCredentialsError:
+    print("Credenciales no disponibles.")
+
+
+# Leer el archivo CSV con pandas
+import pandas as pd
+bbdd = pd.read_csv(file_name)
+display(bbdd.head())
