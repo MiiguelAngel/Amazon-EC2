@@ -99,3 +99,58 @@ gc.collect()
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+import cudf
+import numpy as np
+import pandas as pd
+from imblearn.over_sampling import RandomOverSampler
+from sklearn.datasets import make_classification
+
+# Crear el muestreador de oversampling
+sampler = RandomOverSampler()
+
+# Lista para almacenar los resultados de oversampling
+X_resampled_all = []
+y_resampled_all = []
+
+# Procesar cada chunk
+for i in range(num_chunks):
+    start_index = i * chunk_size
+    end_index = min((i + 1) * chunk_size, len(X))
+    
+    # Extraer el chunk
+    X_chunk = X.iloc[start_index:end_index]
+    y_chunk = y.iloc[start_index:end_index]
+
+    initial_count = len(y_chunk)
+    initial_distribution = y_chunk.value_counts()
+    
+    # Convertir a numpy arrays
+    X_np = X_chunk.to_numpy()
+    y_np = y_chunk.to_numpy()
+    
+    # Aplicar oversampling
+    X_resampled_np, y_resampled_np = sampler.fit_resample(X_np, y_np)
+
+    final_count = len(y_resampled_np)
+    final_distribution = pd.Series(y_resampled_np).value_counts()
+
+    # Imprimir información sobre el chunk procesado
+    print('*'*100)
+    print(f"Chunk {i + 1}/{num_chunks}")
+    print(f"Initial count: {initial_count}")
+    print(f"Initial distribution:\n{initial_distribution}")
+    print(f"Final count: {final_count}")
+    print(f"Final distribution:\n{final_distribution}")
+    print('*'*100)
+    
+    # Convertir los resultados a cudf DataFrame/Series
+    X_resampled_cudf = cudf.DataFrame.from_records(X_resampled_np, columns=X_chunk.columns)
+    y_resampled_cudf = cudf.Series(y_resampled_np)
+    
+    # Convertir de vuelta a pandas DataFrame/Series y almacenar en listas
+    X_resampled_all.append(X_resampled_cudf.to_pandas())
+    y_resampled_all.append(y_resampled_cudf.to_pandas())
+
+# Combinar los resultados de oversampling
+X_resampled_all = pd.concat(X_resampled_all, ignore_index=True)
+y_resampled_all = pd.concat(y_resampled_all, ignore_index=True)
